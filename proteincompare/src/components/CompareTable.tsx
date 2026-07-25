@@ -183,7 +183,7 @@ export default function CompareTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto border border-[var(--color-line)] rounded-lg bg-white/40">
+      <div className="overflow-x-auto border border-[var(--color-line)] rounded-lg bg-[var(--color-paper-dim)]/40">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--color-line)] text-left">
@@ -203,7 +203,7 @@ export default function CompareTable() {
           </thead>
           <tbody>
             {rows.map(({ p, ppg }) => (
-              <tr key={p.id} className="border-b border-[var(--color-line)] last:border-0 hover:bg-[var(--color-paper-dim)]/50 transition-colors">
+              <tr key={p.id} className="border-b border-[var(--color-line)] last:border-0 hover:bg-[var(--color-paper-dim)] transition-colors">
                 <td className="py-3 px-3">
                   <div className="font-medium text-[var(--color-ink)]">{p.brand}</div>
                   <div className="text-[var(--color-ink-soft)] text-xs">{p.name}</div>
@@ -261,7 +261,7 @@ function FilterGroup<T extends string>({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as T)}
-        className="text-xs border border-[var(--color-line)] rounded-md px-2 py-1 bg-white text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-steel)]"
+        className="text-xs border border-[var(--color-line)] rounded-md px-2 py-1 bg-[var(--color-paper-dim)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-steel)]"
       >
         {options.map((o) => (
           <option key={o} value={o}>

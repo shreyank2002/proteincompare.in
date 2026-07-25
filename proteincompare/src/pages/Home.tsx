@@ -63,7 +63,7 @@ export default function Home() {
             <Link
               to={`/blog/${post.slug}`}
               key={post.slug}
-              className="block border border-[var(--color-line)] rounded-lg p-5 bg-white/40 hover:bg-white/70 transition-colors"
+              className="block border border-[var(--color-line)] rounded-lg p-5 bg-[var(--color-paper-dim)]/40 hover:bg-[var(--color-paper-dim)]/80 transition-colors"
             >
               <span className="font-[var(--font-data)] text-xs uppercase tracking-wide text-[var(--color-steel)]">
                 {post.tag}

@@ -19,20 +19,27 @@
 
 /* Dark theme: same identity, re-tuned for a low-light surface rather than a flat invert. */
 .dark {
-  --color-paper: #0B0F17;
-  --color-paper-dim: #131A26;
-  --color-ink: #EDEAE0;
-  --color-ink-soft: #A8B0C4;
+  --color-paper: #070A10;
+  --color-paper-dim: #10151F;
+  --color-ink: #F2EFE6;
+  --color-ink-soft: #9BA3B8;
   --color-steel: #6FA8DC;
   --color-value: #E0B354;
   --color-value-bg: #2A2313;
-  --color-line: #232B3D;
+  --color-line: #1E2635;
   --color-sage: #8FB89A;
   --color-coral: #E1836A;
 }
 
 html {
   transition: background-color 0.25s ease;
+  /* Native widgets the CSS variables can't reach — the open <select> option list,
+     scrollbars, focus rings — follow this rather than the Tailwind classes. */
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
