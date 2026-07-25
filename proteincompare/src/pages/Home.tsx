@@ -1,4 +1,5 @@
 import CompareTable from "../components/CompareTable"
+import Rankings from "../components/Rankings"
 import { products, pricePerGramProtein } from "../data/products"
 import { posts } from "../data/posts"
 import { Link } from "react-router-dom"
@@ -38,6 +39,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <div id="rankings" className="pb-20 scroll-mt-20">
+        <Rankings />
+      </div>
 
       <div className="pb-20">
         <CompareTable />

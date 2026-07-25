@@ -17,8 +17,61 @@
   --color-coral: #C1543A;
 }
 
+/* Dark theme: same identity, re-tuned for a low-light surface rather than a flat invert. */
+.dark {
+  --color-paper: #0B0F17;
+  --color-paper-dim: #131A26;
+  --color-ink: #EDEAE0;
+  --color-ink-soft: #A8B0C4;
+  --color-steel: #6FA8DC;
+  --color-value: #E0B354;
+  --color-value-bg: #2A2313;
+  --color-line: #232B3D;
+  --color-sage: #8FB89A;
+  --color-coral: #E1836A;
+}
+
+html {
+  transition: background-color 0.25s ease;
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Ambient falling-particles background: protein scoops + capsules drifting down.
+   Kept low-opacity and slow so it reads as atmosphere, not decoration fighting the content. */
+@keyframes drift-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--particle-opacity, 0.12);
+  }
+  92% {
+    opacity: var(--particle-opacity, 0.12);
+  }
+  100% {
+    transform: translateY(110vh) rotate(var(--particle-rotate, 40deg));
+    opacity: 0;
+  }
+}
+
+.falling-particle {
+  position: absolute;
+  top: 0;
+  animation: drift-fall linear infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .falling-particle {
+    animation: none;
+    display: none;
+  }
 }
