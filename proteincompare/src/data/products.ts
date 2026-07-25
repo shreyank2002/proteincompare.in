@@ -1,3 +1,5 @@
+import { findTrustifiedMatch } from "./trustifiedDatabase"
+
 export type TrustifiedStatus = "Pass" | "Fail" | "Expired" | "Not tested"
 
 export interface TrustifiedResult {
@@ -51,7 +53,9 @@ export function pricePerGramProtein(p: Product): number {
 
 // Protein/price data: checked against Amazon.in / brand listings manually — revisit periodically.
 // Trustified fields: sourced from https://www.trustified.in/proteinpowders (public pass/fail database).
-export const products: Product[] = [
+// Hand-entered results below are authoritative; see `products` at the bottom of this file for the
+// automatic lookup that fills in the ones never checked by hand.
+const rawProducts: Product[] = [
   {
     id: "muscleblaze-biozyme-performance",
     brand: "MuscleBlaze",
@@ -260,3 +264,26 @@ export const products: Product[] = [
     notes: "Juice-style clear isolate, 92 kcal and no added sugar per 27g scoop — the priciest way to buy a gram of protein here, which is the trade-off for not drinking a milkshake. Trustified has no clear whey products in its public database as of writing.",
   },
 ]
+
+// A hand-entered result carrying a reportUrl was verified against the lab's own page, so it stays
+// as written. Only the ones never checked by hand — "Not tested" with no report to point at — get
+// an automatic lookup, and only when the matcher is confident enough to return a hit. Products the
+// lab has genuinely never tested stay "Not tested"; nothing here forces a match.
+export function resolveTrustified(product: Product): Product {
+  if (product.trustified.status !== "Not tested" || product.trustified.reportUrl) return product
+
+  const match = findTrustifiedMatch(product.brand, product.name)
+  if (!match) return product
+
+  return {
+    ...product,
+    trustified: {
+      status: match.status,
+      testedBy: match.testedBy,
+      testedDate: match.testedDate,
+      reportUrl: match.reportUrl,
+    },
+  }
+}
+
+export const products: Product[] = rawProducts.map(resolveTrustified)
