@@ -1,6 +1,31 @@
 import { useMemo, useState } from "react"
-import { products, pricePerGramProtein, type Product } from "../data/products"
+import { products, pricePerGramProtein, type Product, type TrustifiedResult } from "../data/products"
 import ValueGauge from "./ValueGauge"
+
+function TrustifiedBadge({ result }: { result: TrustifiedResult }) {
+  const styles: Record<TrustifiedResult["status"], { color: string; label: string }> = {
+    Pass: { color: "var(--color-sage)", label: "✓ Passed" },
+    Fail: { color: "var(--color-coral)", label: "✕ Failed" },
+    Expired: { color: "var(--color-value)", label: "⚠ Expired" },
+    "Not tested": { color: "var(--color-ink-soft)", label: "Not tested" },
+  }
+  const s = styles[result.status]
+  if (result.status === "Not tested") {
+    return <span style={{ color: s.color }}>{s.label}</span>
+  }
+  return (
+    <a
+      href={result.reportUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:underline"
+      style={{ color: s.color }}
+      title={`Tested by ${result.testedBy} on ${result.testedDate}`}
+    >
+      {s.label}
+    </a>
+  )
+}
 
 type DietFilter = "All" | Product["diet"]
 type TypeFilter = "All" | Product["type"]
@@ -10,11 +35,13 @@ export default function CompareTable() {
   const [diet, setDiet] = useState<DietFilter>("All")
   const [type, setType] = useState<TypeFilter>("All")
   const [sort, setSort] = useState<SortKey>("value")
+  const [trustedOnly, setTrustedOnly] = useState(false)
 
   const rows = useMemo(() => {
     let list = products.map((p) => ({ p, ppg: pricePerGramProtein(p) }))
     if (diet !== "All") list = list.filter((r) => r.p.diet === diet)
     if (type !== "All") list = list.filter((r) => r.p.type === type)
+    if (trustedOnly) list = list.filter((r) => r.p.trustified.status === "Pass")
     if (sort === "value") list.sort((a, b) => a.ppg - b.ppg)
     if (sort === "protein") list.sort((a, b) => b.p.proteinPerServingG - a.p.proteinPerServingG)
     if (sort === "price") list.sort((a, b) => a.p.priceINR - b.p.priceINR)
@@ -25,7 +52,7 @@ export default function CompareTable() {
   const min = Math.min(...ppgValues)
   const max = Math.max(...ppgValues)
 
-  const types: TypeFilter[] = ["All", "Whey Concentrate", "Whey Isolate", "Plant Protein"]
+  const types: TypeFilter[] = ["All", "Whey Concentrate", "Whey Isolate", "Whey Blend", "Plant Protein"]
   const diets: DietFilter[] = ["All", "Veg", "Non-Veg friendly"]
 
   return (
@@ -39,7 +66,16 @@ export default function CompareTable() {
             Cost per gram of protein
           </h2>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-1.5 text-xs text-[var(--color-ink-soft)] font-[var(--font-data)] uppercase tracking-wide cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={trustedOnly}
+              onChange={(e) => setTrustedOnly(e.target.checked)}
+              className="accent-[var(--color-sage)]"
+            />
+            Trustified-passed only
+          </label>
           <FilterGroup label="Type" value={type} options={types} onChange={(v) => setType(v as TypeFilter)} />
           <FilterGroup label="Diet" value={diet} options={diets} onChange={(v) => setDiet(v as DietFilter)} />
           <FilterGroup
@@ -62,7 +98,7 @@ export default function CompareTable() {
               <Th className="text-right">Sugar/serving</Th>
               <Th>Value (₹ per g protein)</Th>
               <Th>Diet</Th>
-              <Th>Tested</Th>
+              <Th>Trustified</Th>
             </tr>
           </thead>
           <tbody>
@@ -91,11 +127,7 @@ export default function CompareTable() {
                   </span>
                 </td>
                 <td className="py-3 px-3 text-xs">
-                  {p.thirdPartyTested ? (
-                    <span style={{ color: "var(--color-sage)" }}>✓ Lab tested</span>
-                  ) : (
-                    <span style={{ color: "var(--color-coral)" }}>Not published</span>
-                  )}
+                  <TrustifiedBadge result={p.trustified} />
                 </td>
               </tr>
             ))}
