@@ -11,7 +11,7 @@ export interface Product {
   id: string
   brand: string
   name: string
-  type: "Whey Concentrate" | "Whey Isolate" | "Whey Blend" | "Plant Protein" | "Mass Gainer" | "Creatine"
+  type: "Whey Concentrate" | "Whey Isolate" | "Whey Blend" | "Clear Whey Isolate" | "Plant Protein" | "Mass Gainer" | "Creatine"
   packSizeG: number
   priceINR: number
   servingG: number
@@ -22,6 +22,24 @@ export interface Product {
   trustified: TrustifiedResult
   affiliateUrl: string
   notes: string
+}
+
+// Plain-English explainer for each category — what actually changes between them.
+export const proteinTypeInfo: Record<Product["type"], string> = {
+  "Whey Concentrate":
+    "The least-filtered form of whey — roughly 70-80% protein by weight, with some lactose and fat left in, which is why it tastes creamier, costs less per gram, and can bother you if you're lactose-sensitive.",
+  "Whey Isolate":
+    "Whey filtered further to strip out most of the lactose, fat, and carbs, landing around 90% protein — thinner and less creamy than concentrate, easier on a sensitive gut, and noticeably more expensive per gram of protein.",
+  "Whey Blend":
+    "A mix of concentrate and isolate (sometimes with hydrolysate), which lets brands hit a price point between the two — check the label order, because most blends are mostly concentrate.",
+  "Clear Whey Isolate":
+    "Isolate treated to stay soluble in acidic liquid, so it mixes into a translucent fruit-juice-style drink instead of a milkshake — same fast digestion as regular isolate, no heavy milky mouthfeel, but usually a smaller 20g dose at the highest cost per gram of protein.",
+  "Plant Protein":
+    "Protein pulled from peas, rice, soy, or hemp — usually blended so the amino acid profile is complete, digests a bit slower, and has a grittier, earthier taste than whey.",
+  "Mass Gainer":
+    "Mostly carbohydrate with a modest amount of protein added, built for people who struggle to eat enough calories rather than for protein value — judge it on calories, not on cost per gram of protein.",
+  Creatine:
+    "Not a protein at all but a separate compound your muscles use for short, explosive effort — taken alongside protein, never as a replacement for it.",
 }
 
 // pricePerGramProtein = priceINR / (packSizeG / servingG) / proteinPerServingG
@@ -220,5 +238,25 @@ export const products: Product[] = [
     },
     affiliateUrl: "#",
     notes: "UK import brand; pea/hemp/rice blend. Not in Trustified's India-market database (they primarily test India-sold domestic and D2C brands).",
+  },
+  {
+    id: "muscleblaze-biozyme-clear-whey-isolate",
+    brand: "MuscleBlaze",
+    name: "Biozyme Clear Whey Isolate",
+    type: "Clear Whey Isolate",
+    packSizeG: 540,
+    priceINR: 2179,
+    servingG: 27,
+    proteinPerServingG: 20,
+    sugarPerServingG: 0,
+    flavor: "Icy Orange",
+    diet: "Non-Veg friendly",
+    trustified: {
+      status: "Not tested",
+      testedBy: "",
+      testedDate: "",
+    },
+    affiliateUrl: "#",
+    notes: "Juice-style clear isolate, 92 kcal and no added sugar per 27g scoop — the priciest way to buy a gram of protein here, which is the trade-off for not drinking a milkshake. Trustified has no clear whey products in its public database as of writing.",
   },
 ]

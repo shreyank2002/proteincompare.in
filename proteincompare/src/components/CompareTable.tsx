@@ -1,6 +1,101 @@
-import { useMemo, useState } from "react"
-import { products, pricePerGramProtein, type Product, type TrustifiedResult } from "../data/products"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { products, pricePerGramProtein, proteinTypeInfo, type Product, type TrustifiedResult } from "../data/products"
 import ValueGauge from "./ValueGauge"
+
+const PANEL_WIDTH = 340
+
+// One legend for the whole Type column. Anchored with position:fixed rather than as an
+// absolutely-positioned child, because the table sits inside an overflow-x-auto wrapper —
+// which per spec makes the vertical axis scrollable too, and would clip the panel.
+function TypeLegend() {
+  const [pos, setPos] = useState<{ top: number; left: number; maxHeight: number } | null>(null)
+  const [pinned, setPinned] = useState(false)
+  const wrapRef = useRef<HTMLSpanElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+
+  const show = () => {
+    const r = btnRef.current?.getBoundingClientRect()
+    if (!r) return
+    const top = r.bottom + 8
+    setPos({
+      top,
+      left: Math.max(12, Math.min(r.left, window.innerWidth - PANEL_WIDTH - 12)),
+      maxHeight: window.innerHeight - top - 12,
+    })
+  }
+  const hide = () => {
+    if (!pinned) setPos(null)
+  }
+
+  // Click-to-open pins the panel; dismiss it on an outside click or Escape.
+  useEffect(() => {
+    if (!pinned) return
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) {
+        setPinned(false)
+        setPos(null)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPinned(false)
+        setPos(null)
+      }
+    }
+    document.addEventListener("mousedown", onDown)
+    document.addEventListener("keydown", onKey)
+    return () => {
+      document.removeEventListener("mousedown", onDown)
+      document.removeEventListener("keydown", onKey)
+    }
+  }, [pinned])
+
+  return (
+    <span ref={wrapRef} className="relative inline-flex" onMouseEnter={show} onMouseLeave={hide}>
+      <button
+        ref={btnRef}
+        type="button"
+        aria-label="What the protein types mean"
+        aria-expanded={pos !== null}
+        onFocus={show}
+        onBlur={hide}
+        onClick={() => {
+          if (pinned) {
+            setPinned(false)
+            setPos(null)
+          } else {
+            show()
+            setPinned(true)
+          }
+        }}
+        className="shrink-0 w-3.5 h-3.5 rounded-full border border-[var(--color-line)] font-[var(--font-data)] text-[9px] leading-none text-[var(--color-ink-soft)] hover:text-[var(--color-steel)] hover:border-[var(--color-steel)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-steel)] transition-colors cursor-help"
+      >
+        i
+      </button>
+      {pos && (
+        <div
+          role="tooltip"
+          style={{ top: pos.top, left: pos.left, width: PANEL_WIDTH, maxHeight: pos.maxHeight }}
+          className="fixed z-50 overflow-y-auto rounded-lg border border-[var(--color-line)] bg-[var(--color-paper)] shadow-lg p-3.5 text-left normal-case tracking-normal"
+        >
+          <div className="font-[var(--font-data)] text-[10px] uppercase tracking-widest text-[var(--color-steel)] mb-2.5">
+            Protein types
+          </div>
+          <dl className="space-y-2.5">
+            {(Object.entries(proteinTypeInfo) as [Product["type"], string][]).map(([name, description]) => (
+              <div key={name}>
+                <dt className="font-[var(--font-display)] text-xs font-semibold text-[var(--color-ink)]">{name}</dt>
+                <dd className="font-[var(--font-body)] text-[11px] leading-relaxed text-[var(--color-ink-soft)]">
+                  {description}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+    </span>
+  )
+}
 
 function TrustifiedBadge({ result }: { result: TrustifiedResult }) {
   const styles: Record<TrustifiedResult["status"], { color: string; label: string }> = {
@@ -46,13 +141,13 @@ export default function CompareTable() {
     if (sort === "protein") list.sort((a, b) => b.p.proteinPerServingG - a.p.proteinPerServingG)
     if (sort === "price") list.sort((a, b) => a.p.priceINR - b.p.priceINR)
     return list
-  }, [diet, type, sort])
+  }, [diet, type, sort, trustedOnly])
 
   const ppgValues = rows.map((r) => r.ppg)
   const min = Math.min(...ppgValues)
   const max = Math.max(...ppgValues)
 
-  const types: TypeFilter[] = ["All", "Whey Concentrate", "Whey Isolate", "Whey Blend", "Plant Protein"]
+  const types: TypeFilter[] = ["All", "Whey Concentrate", "Whey Isolate", "Whey Blend", "Clear Whey Isolate", "Plant Protein"]
   const diets: DietFilter[] = ["All", "Veg", "Non-Veg friendly"]
 
   return (
@@ -93,7 +188,12 @@ export default function CompareTable() {
           <thead>
             <tr className="border-b border-[var(--color-line)] text-left">
               <Th>Product</Th>
-              <Th>Type</Th>
+              <Th>
+                <span className="inline-flex items-center gap-1.5">
+                  Type
+                  <TypeLegend />
+                </span>
+              </Th>
               <Th className="text-right">Protein/serving</Th>
               <Th className="text-right">Sugar/serving</Th>
               <Th>Value (₹ per g protein)</Th>
