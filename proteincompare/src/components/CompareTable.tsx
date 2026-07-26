@@ -97,27 +97,61 @@ function TypeLegend() {
   )
 }
 
+// Deliberately understated: this is a verification footnote, not an action. The Buy button is the
+// only thing in a row styled to look clickable, so the eye lands there first.
 function TrustifiedBadge({ result }: { result: TrustifiedResult }) {
   const styles: Record<TrustifiedResult["status"], { color: string; label: string }> = {
-    Pass: { color: "var(--color-sage)", label: "✓ Passed" },
-    Fail: { color: "var(--color-coral)", label: "✕ Failed" },
-    Expired: { color: "var(--color-value)", label: "⚠ Expired" },
+    Pass: { color: "var(--color-sage)", label: "Passed" },
+    Fail: { color: "var(--color-coral)", label: "Failed" },
+    Expired: { color: "var(--color-value)", label: "Expired" },
     "Not tested": { color: "var(--color-ink-soft)", label: "Not tested" },
   }
   const s = styles[result.status]
-  if (result.status === "Not tested") {
-    return <span style={{ color: s.color }}>{s.label}</span>
+
+  if (result.status === "Not tested" || !result.reportUrl) {
+    return (
+      <span className="text-[10px] font-normal" style={{ color: s.color }}>
+        {s.label}
+      </span>
+    )
   }
+
   return (
     <a
       href={result.reportUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="hover:underline"
-      style={{ color: s.color }}
+      className="text-[10px] font-normal text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] hover:underline underline-offset-2 transition-colors"
       title={`Tested by ${result.testedBy} on ${result.testedDate}`}
     >
-      {s.label}
+      <span style={{ color: s.color }}>{s.label}</span> · view lab report ↗
+    </a>
+  )
+}
+
+// The row's single call to action. `sponsored` is Google's recommended rel for affiliate links.
+function BuyButton({ affiliateUrl, productName }: { affiliateUrl: string; productName: string }) {
+  const base = "inline-block rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap bg-[var(--color-ink)] text-[var(--color-paper)]"
+
+  if (affiliateUrl === "#") {
+    return (
+      <span className="inline-flex flex-col items-end gap-1">
+        <span aria-disabled="true" title={`Affiliate link pending for ${productName}`} className={`${base} opacity-40 cursor-not-allowed select-none`}>
+          Buy →
+        </span>
+        <span className="text-[9px] text-[var(--color-ink-soft)]">Link pending</span>
+      </span>
+    )
+  }
+
+  return (
+    <a
+      href={affiliateUrl}
+      target="_blank"
+      rel="noopener noreferrer sponsored"
+      className={`${base} hover:bg-[var(--color-steel)] transition-colors`}
+    >
+      Buy →
     </a>
   )
 }
@@ -199,6 +233,7 @@ export default function CompareTable() {
               <Th>Value (₹ per g protein)</Th>
               <Th>Diet</Th>
               <Th>Trustified</Th>
+              <Th className="text-right">Buy</Th>
             </tr>
           </thead>
           <tbody>
@@ -228,6 +263,9 @@ export default function CompareTable() {
                 </td>
                 <td className="py-3 px-3 text-xs">
                   <TrustifiedBadge result={p.trustified} />
+                </td>
+                <td className="py-3 px-3 text-right">
+                  <BuyButton affiliateUrl={p.affiliateUrl} productName={`${p.brand} ${p.name}`} />
                 </td>
               </tr>
             ))}
